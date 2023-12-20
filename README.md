@@ -5,4 +5,4 @@ Trabalho em desenvolvimento:
 Tecnologias: API RESTful, Express, Node.js + MongoDB
 
 
-Para roda:  npm satar na pasta Backend
+Para roda: baixar o arquivo zip, dar o comando,  npm satar na pasta Backend.
