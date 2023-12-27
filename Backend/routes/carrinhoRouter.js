@@ -6,6 +6,8 @@ router.post('/', carrinhoController.createCarrinho);
 
 router.get('/', carrinhoController.buscarProdutoCarrinho);
 
+router.patch('/:id', carrinhoController.updateCarrinho);
+
 router.delete('/:id', carrinhoController.deleteProdutoCarrinho);
 
 

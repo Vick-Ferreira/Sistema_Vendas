@@ -1,21 +1,43 @@
 const main = document.querySelector('#conteudo'); //id pega todo o conteudo que foi desmenbrado do index.html
 const conteudoCategoria = document.getElementById('conteudoCategoria');
 
+function carregarHTML(url, callback) {
+    fetch(url)
+        .then(res => res.text())
+        .then(html => {
+            main.innerHTML = html;
+            console.log('HTML de Produtos carregado com sucesso!');
+            if (callback) {
+                callback();
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao carregar HTML:', error);
+        });
+}
 
-linkCadastrarProdutos.addEventListener('click', function (e) {
-    e.preventDefault();
-    carregarCadastrarProdutos();
-});
 
-getProdutos();
+
 
 /*IMPORTANTE LEMBRAS: QUANDO CARREGAMOS PAGINAS DINAMICAS E TRABALHAMOS COM EVENTOS DE CLICK, JS PRECISA AGURDA HTML ESTAR REALMENT NO DOM
+Lembrar uso callback - O callback é útil quando você quer executar ações adicionais após o HTML
+ser inserido no DOM. Se  houver a necessidade de executar mais código após o carregamento do HTML, 
+assim como fiz na requisição de cima, para o carregamento da pagina de cadatro e manipulação
+dos eventos do formulario
 
 -adicionar um ouvinte de eventos diretamente ao formulário 
 (meuFormulario), que pode não existir no momento em que o 
 script é carregado, você adiciona o ouvinte de eventos ao
  elemento pai (main) que já está presente no DOM.*/
 
+
+ 
+ linkCadastrarProdutos.addEventListener('click', function (e) {
+    e.preventDefault();
+    carregarCadastrarProdutos();
+});
+
+getProdutos();
  function carregarCadastrarProdutos() {
     carregarHTML('../WEB/cadastroProduto.html', function () {
         main.addEventListener('submit', function (e) {
@@ -59,266 +81,6 @@ script é carregado, você adiciona o ouvinte de eventos ao
         });
     });
 }
-
-/*IMPORTANTE LEMBRAS: QUANDO CARREGAMOS PAGINAS DINAMICAS E TRABALHAMOS COM EVENTOS DE CLICK, JS PRECISA AGURDA HTML ESTAR REALMENT NO DOM
-
-Lembrar uso callback - O callback é útil quando você quer executar ações adicionais após o HTML
-ser inserido no DOM. Se  houver a necessidade de executar mais código após o carregamento do HTML, 
-assim como fiz na requisição de cima, para o carregamento da pagina de cadatro e manipulação
-dos eventos do formulario*/
-
-function carregarHTML(url, callback) {
-    fetch(url)
-        .then(res => res.text())
-        .then(html => {
-            main.innerHTML = html;
-            console.log('HTML de Produtos carregado com sucesso!');
-            if (callback) {
-                callback();
-            }
-        })
-        .catch(error => {
-            console.error('Erro ao carregar HTML:', error);
-        });
-}
-
-
-
-//ADIMIN CADASTRANDO E LISTANDO , EDITANDO E EXCLUINDO VENDEDOR 
-linkCadastrarVendedores.addEventListener('click', function (e) {
-    e.preventDefault();
-    carregarCadastrarVendedores();
-});
-
-function carregarCadastrarVendedores() {
-    carregarHTML('./cadastroVendedor.html', function () {
-     //carrega o html de cadastroVendedores 
-        
-        main.addEventListener('submit', function (e) {
-            //delegação de evento, necessario para manipular elementos para serem carregador de forma dinamica
-            //verifica se o formulário com o ID 'formulario_produto' foi o alvo do evento. Se sim executa
-            if (e.target && e.target.id === 'formulario_vendedor') {//IMPORTANTE
-                e.preventDefault();
-
-                // RECUPERANDO DADOS
-                const nome = document.getElementById('nome').value;
-                const cpf = document.getElementById('cpf').value;
-                const senha = document.getElementById('senha').value;
-                const categoriaCidadesRadio = document.querySelectorAll('[name="categoria"]:checked');
-                const categorias = Array.from(categoriaCidadesRadio).map(radio => radio.value);
-
-                const vendedor = {
-                    nome: nome,
-                    cpf: cpf,
-                    senha: senha,
-                    categoria: categorias.join(','), //CORBO BANCO/REQUISIÇÃO
-                };
-
-                fetch('http://localhost:3000/vendedor', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(vendedor),
-                })
-                .then(res => res.json())
-                .then(data => {
-                    console.log('Vendedor adicionado:', data);
-
-                    //LIMPANDO INPUTS
-                    const meuFormulario = document.getElementById('formulario_vendedor');
-                    if(meuFormulario){
-                        meuFormulario.reset();
-                    }else{
-                        console.error('Formulário não encontrado!');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao adicionar produto:', error);
-                });
-            }
-        });
-    });
-}
-function editarVendedor(id){
-    fetch("../web/editarVendedor.html")
-    .then(res => res.text())
-    .then(html => {
-        main.innerHTML = html  //se resposta OK  renderiza html
-    
-        //hora de recuperar os dados para a edição 
-        fetch('http://localhost:3000/vendedor/' + id)
-        .then(res => res.json()  //da para fazer verificação de se if (!res.ok ) = se for diferente que ok (erro ao recuperar dados)
-        .then(vendedor => {
-            const inputId = document.getElementById('id');
-            const inputNome = document.getElementById('nome')
-            const inputCpf = document.getElementById('cpf');
-            const inputSenha = document.getElementById('senha');
-            const categoriaRadio = document.querySelector('[name="categoria"]');
-
-            if(inputId && inputNome && inputSenha) {
-                inputId.value = vendedor._id
-                inputNome.value = vendedor.nome //aqui pegamos o vamor que recuperam a cima na constante e renderizamos o valor que esta dentro dele
-                inputSenha.value = vendedor.senha
-                inputCpf.value = vendedor.cpf
-                categoriaRadio.checked = true;
-
-                const btnSalvar = document.getElementById('salvarVendedor');
-                btnSalvar.onclick = function(e) {
-                    e.preventDefault();
-                    //evendo click
-
-                    const dadosAtualizados = {
-                        "nome": inputNome.value,
-                        "senha": inputSenha.value,
-                        "cpf": inputCpf.value,
-                        "categoria": document.querySelector('input[name="categoria"]:checked').value
-                    }
-
-                    //atualização dos dados de fato 
-                    //corpo
-                    const header = {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(dadosAtualizados)         
-                    };
-
-                     fetch("http://localhost:3000/vendedor/" + id, header)//atualizando vendedor pegando o id, os novos dados e seu header
-                     .then(() => {
-                        carregarVendedores();
-                     })
-                     .catch(error => {
-                        console.error('erro ao atuaalizar vendedor')
-                     })
-                }
-            }
-
-            const btnCancelar = document.getElementById('cancelarVendedor');
-                btnCancelar.onclick = function (e){
-                    e.preventDefault();
-                    carregarVendedores();
-                }
-        })
-        )
-    })
-}
-
-function excluirVendedor(id) {
-    fetch(`http://localhost:3000/vendedor/${id}` , {
-        method: 'DELETE',
-    }).then(res => {
-        if(res.ok){
-            console.log('vendedor excluido')
-            getVendedores();
-        }else{
-            console.log('erro ao excluir vendedor')
-        }
-    })
-    .catch(error => {
-        console.error('Erro ao excluir vendedor:', error);
-        // Adicione lógica adicional para tratamento de erro
-    });
-   
-}
-
-
-
-//CHAMANDO HTML
-linkVendedores.addEventListener('click', function (e) {
-    e.preventDefault();
-   carregarVendedores();
-} )
-
-function  carregarVendedores() {
-    carregarHTML('./Vendedores.html');
-    getVendedores();
-}
-function getVendedores() {
-
-    const listagemDinamica = document.getElementById('listagemDinamica'); //recuperando elemento html
-     listagemDinamica.innerHTML = '';
-
-
- fetch('http://localhost:3000/vendedor', {
-     method: 'GET',
-     headers: {
-         'Content-Type': 'application/json',
-     },
- })
- .then(res => res.json())
- .then(data => {
-     console.log('Vendedores listados:', data);
-     // criar um card e adicioná-lo à seção
-     data.forEach(vendedor => {
-         const card = criarCardVendedor(vendedor);
-         listagemDinamica.appendChild(card); // Adicione o a cada produto
-     });
- })
- .catch(error => {
-     console.error('Erro ao listar produtos:', error);
- });
-}
- //criando card VENDEDOR
- function  criarCardVendedor(vendedor){ //não esquecer do argumento para recuperar dados de forma dinamica
-     
-     const card = document.createElement('div');
-     card.classList.add('card');
-
-     const nomeVendedor = document.createElement('p');
-     nomeVendedor.classList.add('nomeVendedor');
-     nomeVendedor.innerHTML = (vendedor.nome);
-
-     const cpfVendedor = document.createElement('p');
-     cpfVendedor.classList.add('cpfVendedor');
-     cpfVendedor.innerHTML =  (vendedor.cpf);
-
-     const senhaVendedor = document.createElement('p');
-     senhaVendedor.classList.add('senhaVendedor');
-     senhaVendedor.innerHTML =  (vendedor.senha);
-
-
-     const Categoria = document.createElement('p');
-     Categoria.classList.add('categoria');
-     Categoria.innerHTML = (vendedor.categoria);
-
-
-     const aExcluir = document.createElement('a');
-     aExcluir.href='',
-     
-     aExcluir.onclick = function(e){
-         e.preventDefault();
-         const vendedorId = vendedor._id;
-         excluirVendedor(vendedorId)
-     }
-     aExcluir.innerHTML = 'Excluir'
-
-     const aEditar = document.createElement('a');
-     aEditar.href='',
-     aEditar.onclick = function(e){
-         e.preventDefault();
-         const vendedorId = vendedor._id;
-         console.log('ID do produto ao clicar em Editar:', vendedor._id);
-         editarVendedor(vendedorId)//carrega o id
-     }
-     aEditar.innerHTML = 'Editar'
-
-
-     card.appendChild(nomeVendedor);
-     card.appendChild(cpfVendedor);
-     card.appendChild(senhaVendedor);
-     card.appendChild(Categoria);
-     card.appendChild(aExcluir);
-     card.appendChild(aEditar);
-
-
-     return card;
-
-}
-
-
-
 
 
 //ADIMIN CADASTRANDO LISTANDO EDITANDO E EXLUINDO PRODUTOS
@@ -479,6 +241,461 @@ function excluirProduto(id) {
 
 }
 
+//IMPORTANTE LEMBRAS: QUANDO CARREGAMOS PAGINAS DINAMICAS E TRABALHAMOS COM EVENTOS DE CLICK, JS PRECISA AGURDA HTML ESTAR REALMENT NO DOM
+
+
+cadastroAdimin.addEventListener('click', function(e) {
+    e.preventDefault();
+    carregarcadastroAdimin();
+})
+
+function carregarcadastroAdimin(){
+    carregarHTML('../WEB/cadastroAdimin.html', function(){
+        main.addEventListener('submit', function(e) {
+            //verificando se é o formulario que quero
+            if(e.target && e.target.id === 'formulario_adimin'){
+                e.preventDefault(e);
+
+                //recuperar dados que foi colocado no formulario 
+                const nome  = document.getElementById('nome').value;
+                const senha = document.getElementById('senha').value;
+
+                const adimin = {
+                    nome: nome,
+                    senha: senha
+                };
+
+                fetch('http://localhost:3000/adimin', {
+                    method: 'POST',
+                    headers: {
+                         'Content-Type': 'application/json',
+                        }, body: JSON.stringify(adimin),
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log('adicionado: ', data);
+                    })
+                .catch(error => console.error('Erro ao autenticar: ', error));
+            }
+        });
+    });
+}
+
+adiministradores.addEventListener('click', function(e) {
+    e.preventDefault(e);
+    listarAdministradores();
+})
+function listarAdministradores(){
+     // Limpar a seção antes de adicionar os novos produtos
+     const listagemDinamica = document.getElementById('listagemDinamica'); //recuperando elemento html
+     listagemDinamica.innerHTML = '';
+
+     fetch('http://localhost:3000/adimin', {
+        method: 'GET',
+        headers: {
+            'Content-Type' : 'apllication/json',
+        },
+     })
+     .then(res => res.json())
+     .then( data => {
+        //para cada adimin
+        data.forEach(adimin => {
+            const card = cardAdimin(adimin);
+            listagemDinamica.appendChild(card)
+        });
+     })
+     .catch(error => {
+        console.error('Erro ao listar produtos:', error);
+    });
+
+}
+function cardAdimin(adimin){
+    const card = document.createElement('div');
+    card.classList.add('card');
+
+    
+    const nome = document.createElement('p');
+    nome.classList.add('nome');
+    nome.innerHTML = adimin.nome;
+
+    const senha = document.createElement('p');
+    senha.classList.add('senha');
+    senha.innerHTML = adimin.senha;
+
+    const btnEditar = document.createElement('a');
+    btnEditar.href=''
+    btnEditar.onclick = function(e){
+        e.preventDefault();
+        const  adiminId = adimin._id
+        console.log(adiminId);
+        editarAdimin(adiminId)
+    }
+    btnEditar.innerHTML = "editar"
+
+    const btnExcluir = document.createElement('a');
+    btnExcluir.href='';
+    btnExcluir.onclick = function(e){
+        e.preventDefault();
+        const adiminId = adimin._id
+        excluirAdimin(adiminId)
+        
+        
+    }
+    btnExcluir.innerHTML = "excluir"
+
+
+
+    card.appendChild(nome);
+    card.appendChild(senha);
+    card.appendChild(btnEditar)
+    card.appendChild(btnExcluir)
+
+    return card;
+}
+function editarAdimin(adiminId){
+    fetch("../web/editarAdimin.html")
+    .then(res => res.text())
+    .then(html => {
+        main.innerHTML = html  //chamando meu arquivo estatico
+
+        //requisiçao
+        fetch(`http://localhost:3000/adimin/${adiminId}`)
+        .then(res => res.json())
+        .then(adimin => {
+            const inputNome = document.getElementById('nome');
+            const inputSenha = document.getElementById('senha');
+           
+            if(inputNome && inputSenha){
+                inputNome.value = adimin.nome
+                inputSenha.value = adimin.senha
+
+
+                const btnSalvar = document.getElementById('salvarAdimin')
+                btnSalvar.onclick = function(e){
+                    e.preventDefault();
+
+                    const atualizarDados = {
+                        "nome": inputNome.value,
+                        "senha": inputSenha.value
+                    }
+
+                    const header = {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type' : 'application/json'
+                        },
+                        //mandando no corpo da requisição , transforma tudo em string
+                        body:JSON.stringify(atualizarDados)
+                    };
+                    fetch(`http://localhost:3000/adimin/${adiminId}`, header)
+                    .then(()=> {
+                        listarAdministradores();
+                    })
+                    .catch(erorr => {
+                        console.error('erros ao atualizar Adimin')
+                    })
+                }
+            }
+
+        })
+    })
+}
+function excluirAdimin(adiminId){
+    fetch(`http://localhost:3000/adimin/${adiminId}`, {
+        method: 'DELETE',
+    }).then(res => {
+        if(res.ok){
+            console.log('adimin excluido')
+            listarAdministradores()
+    }else{
+        console.log('erro ao excluir admim')
+    }})
+.catch(error => {
+    console.error('erro', error)
+})
+}
+telaLogin.addEventListener('click', function(e) {
+    e.preventDefault();
+    carregarLogin();
+});
+
+function carregarLogin() {
+    carregarHTML('./telaLogin.html', function() {
+        main.addEventListener('submit', function(e) {
+            // Verifica se é o formulário que estamos procurando
+            if (e.target && e.target.id === 'formulario_Loginadimin') {
+                e.preventDefault();
+
+                const nome = document.getElementById('nome').value;
+                const senha = document.getElementById('senha').value;
+
+                // Certifica-se de que os campos não estejam vazios
+                if (!nome || !senha) {
+                    alert('Por favor, insira nome e senha.');
+                    return;
+                }
+
+                // Faz a solicitação ao servidor para obter todos os administradores
+                fetch('http://localhost:3000/adimin', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(res => res.json())
+                .then(data => {//aqui volta a lista toda dos administradores
+                    // usando o find vemos se a lista que veio do servidor tem o nome e a senha que o usuario colocou
+                    const adminAutenticado = data.find(admin => admin.nome === nome && admin.senha === senha);
+                    if (adminAutenticado) {
+                        
+                        alert('Autenticação bem-sucedida!');
+                    } else {
+                        alert('Nome ou senha incorretos. Tente novamente.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao autenticar:', error);
+                });
+            }
+        });
+    });
+}
+
+
+
+
+//ADIMIN CADASTRANDO E LISTANDO , EDITANDO E EXCLUINDO VENDEDOR 
+linkCadastrarVendedores.addEventListener('click', function (e) {
+    e.preventDefault();
+    carregarCadastrarVendedores();
+});
+
+function carregarCadastrarVendedores() {
+    carregarHTML('./cadastroVendedor.html', function () {
+     //carrega o html de cadastroVendedores 
+        
+        main.addEventListener('submit', function (e) {
+            //delegação de evento, necessario para manipular elementos para serem carregador de forma dinamica
+            //verifica se o formulário com o ID 'formulario_produto' foi o alvo do evento. Se sim executa
+            if (e.target && e.target.id === 'formulario_vendedor') {//IMPORTANTE
+                e.preventDefault();
+
+                // RECUPERANDO DADOS
+                const nome = document.getElementById('nome').value;
+                const cpf = document.getElementById('cpf').value;
+                const senha = document.getElementById('senha').value;
+                const categoriaCidadesRadio = document.querySelectorAll('[name="categoria"]:checked');
+                const categorias = Array.from(categoriaCidadesRadio).map(radio => radio.value);
+
+                const vendedor = {
+                    nome: nome,
+                    cpf: cpf,
+                    senha: senha,
+                    categoria: categorias.join(','), //CORBO BANCO/REQUISIÇÃO
+                };
+
+                fetch('http://localhost:3000/vendedor', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(vendedor),
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log('Vendedor adicionado:', data);
+
+                    //LIMPANDO INPUTS
+                    const meuFormulario = document.getElementById('formulario_vendedor');
+                    if(meuFormulario){
+                        meuFormulario.reset();
+                    }else{
+                        console.error('Formulário não encontrado!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao adicionar produto:', error);
+                });
+            }
+        });
+    });
+}
+function editarVendedor(id){
+    fetch("../web/editarVendedor.html")
+    .then(res => res.text())
+    .then(html => {
+        main.innerHTML = html  //se resposta OK  renderiza html
+    
+        //hora de recuperar os dados para a edição 
+        fetch('http://localhost:3000/vendedor/' + id)
+        .then(res => res.json()  //da para fazer verificação de se if (!res.ok ) = se for diferente que ok (erro ao recuperar dados)
+        .then(vendedor => {
+            const inputId = document.getElementById('id');
+            const inputNome = document.getElementById('nome')
+            const inputCpf = document.getElementById('cpf');
+            const inputSenha = document.getElementById('senha');
+            const categoriaRadio = document.querySelector('[name="categoria"]');
+
+            if(inputId && inputNome && inputSenha) {
+                inputId.value = vendedor._id
+                inputNome.value = vendedor.nome //aqui pegamos o vamor que recuperam a cima na constante e renderizamos o valor que esta dentro dele
+                inputSenha.value = vendedor.senha
+                inputCpf.value = vendedor.cpf
+                categoriaRadio.checked = true;
+
+                const btnSalvar = document.getElementById('salvarVendedor');
+                btnSalvar.onclick = function(e) {
+                    e.preventDefault();
+                    //evendo click
+
+                    const dadosAtualizados = {
+                        "nome": inputNome.value,
+                        "senha": inputSenha.value,
+                        "cpf": inputCpf.value,
+                        "categoria": document.querySelector('input[name="categoria"]:checked').value
+                    }
+
+                    //atualização dos dados de fato 
+                    //corpo
+                    const header = {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dadosAtualizados)         
+                    };
+
+                     fetch("http://localhost:3000/vendedor/" + id, header)//atualizando vendedor pegando o id, os novos dados e seu header
+                     .then(() => {
+                        carregarVendedores();
+                     })
+                     .catch(error => {
+                        console.error('erro ao atuaalizar vendedor')
+                     })
+                }
+            }
+
+            const btnCancelar = document.getElementById('cancelarVendedor');
+                btnCancelar.onclick = function (e){
+                    e.preventDefault();
+                    carregarVendedores();
+                }
+        })
+        )
+    })
+}
+
+function excluirVendedor(id) {
+    fetch(`http://localhost:3000/vendedor/${id}` , {
+        method: 'DELETE',
+    }).then(res => {
+        if(res.ok){
+            console.log('vendedor excluido')
+            getVendedores();
+        }else{
+            console.log('erro ao excluir vendedor')
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao excluir vendedor:', error);
+        // tratamento de erro
+    });
+   
+}
+
+
+
+//CHAMANDO HTML
+linkVendedores.addEventListener('click', function (e) {
+    e.preventDefault();
+   carregarVendedores();
+} )
+
+function  carregarVendedores() {
+    carregarHTML('./Vendedores.html');
+    getVendedores();
+}
+function getVendedores() {
+
+    const listagemDinamica = document.getElementById('listagemDinamica'); //recuperando elemento html
+     listagemDinamica.innerHTML = '';
+
+
+ fetch('http://localhost:3000/vendedor', {
+     method: 'GET',
+     headers: {
+         'Content-Type': 'application/json',
+     },
+ })
+ .then(res => res.json())
+ .then(data => {
+     console.log('Vendedores listados:', data);
+     // criar um card e adicioná-lo à seção
+     data.forEach(vendedor => {
+         const card = criarCardVendedor(vendedor);
+         listagemDinamica.appendChild(card); // Adicione o a cada produto
+     });
+ })
+ .catch(error => {
+     console.error('Erro ao listar produtos:', error);
+ });
+}
+ //criando card VENDEDOR
+ function  criarCardVendedor(vendedor){ //não esquecer do argumento para recuperar dados de forma dinamica
+     
+     const card = document.createElement('div');
+     card.classList.add('card');
+
+     const nomeVendedor = document.createElement('p');
+     nomeVendedor.classList.add('nomeVendedor');
+     nomeVendedor.innerHTML = (vendedor.nome);
+
+     const cpfVendedor = document.createElement('p');
+     cpfVendedor.classList.add('cpfVendedor');
+     cpfVendedor.innerHTML =  (vendedor.cpf);
+
+     const senhaVendedor = document.createElement('p');
+     senhaVendedor.classList.add('senhaVendedor');
+     senhaVendedor.innerHTML =  (vendedor.senha);
+
+
+     const Categoria = document.createElement('p');
+     Categoria.classList.add('categoria');
+     Categoria.innerHTML = (vendedor.categoria);
+
+
+     const aExcluir = document.createElement('a');
+     aExcluir.href='',
+     
+     aExcluir.onclick = function(e){
+         e.preventDefault();
+         const vendedorId = vendedor._id;
+         excluirVendedor(vendedorId)
+     }
+     aExcluir.innerHTML = 'Excluir'
+
+     const aEditar = document.createElement('a');
+     aEditar.href='',
+     aEditar.onclick = function(e){
+         e.preventDefault();
+         const vendedorId = vendedor._id;
+         console.log('ID do produto ao clicar em Editar:', vendedor._id);
+         editarVendedor(vendedorId)//carrega o id
+     }
+     aEditar.innerHTML = 'Editar'
+
+
+     card.appendChild(nomeVendedor);
+     card.appendChild(cpfVendedor);
+     card.appendChild(senhaVendedor);
+     card.appendChild(Categoria);
+     card.appendChild(aExcluir);
+     card.appendChild(aEditar);
+
+
+     return card;
+
+}
 
 
 

@@ -33,6 +33,32 @@ exports.buscarProdutoCarrinho = async (req, res) => {
      res.status(500).json({json: error})
     }
 }
+exports.updateCarrinho = async (req, res) => {
+    const carrinhoId = req.params.id;
+    const { produtoId, novaQuantidade } = req.body;
+
+    //'produtos._id' é usado para procurar no array de produtos dentro do documento do carrinho pelo ID específico do produto (produtoId). Assim, a atualização ocorre no produto correto dentro do carrinho.
+
+    try {
+        const updateCarrinho = await Carrinho.findOneAndUpdate(
+            { _id: carrinhoId, 'produtos._id': produtoId },
+            { $set: { 'produtos.$.quantidade': novaQuantidade } },
+            { new: true }
+        );
+
+        if (!updateCarrinho) {
+            return res.status(404).json({ message: 'Carrinho não encontrado ou produto não pertence ao carrinho.' });
+        }
+
+        res.json({ message: 'Carrinho atualizado com sucesso.' });
+    } catch (error) {
+        console.error('Erro ao atualizar o carrinho:', error);
+        res.status(500).json({ message: 'Erro interno ao atualizar o carrinho.' });
+    }
+};
+
+
+
 exports.deleteProdutoCarrinho = async (req, res) => {
     const id = req.params.id;
     try {

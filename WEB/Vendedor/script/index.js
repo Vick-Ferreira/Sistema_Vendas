@@ -141,7 +141,7 @@ function listarAoCarrinho() {
     .then(data => {
         console.log('Dados do carrinho:', data);
 
-        if (data && Array.isArray(data)) {
+        if (data && Array.isArray(data)) {//array de produto dentro do mue opbejto
             console.log('Produtos no carrinho:', data);
             carrinhoLista.innerHTML = ''; // Limpe o conteúdo atual da lista
             data.forEach(carrinho => {
@@ -179,7 +179,7 @@ function excluirProdutoCarrinho(id){
    
 
 }
-
+//card de listagem dentro do carrinho
 function cardCarrinho(produto) {
     const cards = document.createElement('div');
     cards.classList.add('cards');
@@ -196,23 +196,131 @@ function cardCarrinho(produto) {
     categoria.classList.add('categoria');
     categoria.innerHTML = produto.categoria;
 
-    const btnExlcuir = document.createElement('a');
-    btnExlcuir.href='';
-    btnExlcuir.onclick = function(e){
+    //campo de entrada para quantidade do produto no carrinho
+    const quantidadeProduto = document.createElement('span');
+    quantidadeProduto.classList.add('quantidadeProduto');
+    quantidadeProduto.innerHTML = produto.quantidade || 1; // Valor padrão ou a quantidade atual do produto no carrinho
+
+    const btnAumentarQuantidade = document.createElement('button');
+    btnAumentarQuantidade.innerHTML = '+';
+    btnAumentarQuantidade.onclick = function (e) {
         e.preventDefault();
-        const produtoId = produto._id //TEMQUE TER!!!!
+        const produtoId = produto._id;
+        atualizarQuantidadeCarrinho(produtoId, 1, quantidadeProduto);
+    };
+
+    const btnDiminuirQuantidade = document.createElement('button');
+    btnDiminuirQuantidade.innerHTML = '-';
+    btnDiminuirQuantidade.onclick = function (e) {
+        e.preventDefault();
+        const produtoId = produto._id;
+        atualizarQuantidadeCarrinho(produtoId, -1, quantidadeProduto);
+    };
+
+    const btnExcluir = document.createElement('a');
+    btnExcluir.href='';
+    btnExcluir.onclick = function(e){
+        e.preventDefault();
+        const produtoId = produto._id //TEMQUE TER!!!! IMPORTANTE: NÃO ESQUECER SE NECESSÁRIO RECUPERAR PARA USAR OS DADOS 
         excluirProdutoCarrinho(produtoId)
     };
-    btnExlcuir.innerHTML = 'Excluir do Carrinho';
-       
-        //IMPORTANTE: NÃO ESQUECER SE NECESSÁRIO RECUPERAR PARA USAR OS DADOS 
+    btnExcluir.innerHTML = 'Excluir do Carrinho';
+        
 
     cards.appendChild(nomeProduto);
     cards.appendChild(precoProduto);
     cards.appendChild(categoria);
-    cards.appendChild(btnExlcuir);
+    cards.appendChild(quantidadeProduto);
+    cards.appendChild(btnAumentarQuantidade);
+    cards.appendChild(btnDiminuirQuantidade);
+    cards.appendChild(btnExcluir);
+
+    
 
     return cards;
+}
+
+
+function atualizarQuantidadeCarrinho(produtoId) {
+    console.log('Produto ID:', produtoId);
+        fetch(`http://localhost:3000/carrinho/${produtoId}`)
+        .then(res => res.json())
+        .then(data => {
+            const inputId = document.getElementById('id');
+            
+        })
+
+        const btnSalvar = document.getElementById('finalizar_compra');
+        btnSalvar.onclick = function(e){
+            e.preventDefault();
+
+            const atualizarDados = {
+                "nome": inputNome.value,
+                "senha": inputSenha.value
+            }
+        }
+        const header ={
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(atualizarDados)
+    };
+
+    fetch(`http://localhost:3000/carrinho/${produtoId}`, header)
+    .then(() => {
+        carregarGetCarrinho
+    })
+    .catch(error => {
+        console.error('error ao atualizar')
+    })
+}
+
+
+linkVendedor.addEventListener('click', function(e){
+    e.preventDefault();
+    carregarLoginVendedor();
+})
+function carregarLoginVendedor() {
+    carregarHTML('./web/loginVendedor.html', function () {
+        main.addEventListener('submit', function (e) {
+            // Verifica se é o formulário que queremos
+            if (e.target && e.target.id === 'formulario_Loginvendedor') {
+                e.preventDefault(); // Evita o comportamento padrão de envio do formulário
+        
+                // Restante do seu código aqui...
+                const cpf = document.getElementById('cpf').value;
+                const senha = document.getElementById('senha').value;
+        
+                // Campos não podem ser vazios
+                if (!cpf || !senha) {
+                    alert('Por favor, insira CPF e senha');
+                    return;
+                }
+        
+                fetch('http://localhost:3000/vendedor', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cpf, senha }),
+                })
+                .then(res => res.json())
+                .then(data => {
+                    const vendedorAutenticado = data.find(vendedor => vendedor.cpf === cpf && vendedor.senha === senha);
+                    if (vendedorAutenticado) {
+                        alert('Autenticação bem-sucedida!');
+                    } else {
+                        alert('CPF ou senha incorretos. Tente novamente.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao autenticar:', error);
+                });
+            }
+        });
+        ;
+    });
 }
 
 

@@ -21,6 +21,21 @@ exports.createVendedor =  async (req, res) => {
       res.status(500).json({json: error})
     }
 }
+exports.autenticar = async (req, res) => {
+    const { cpf, senha } = req.query;
+
+    try {
+        const vendedor = await Vendedor.findOne({ cpf, senha });
+
+        if (vendedor) {
+            res.status(200).json({ autenticado: true, message: 'Autenticação bem-sucedida' });
+        } else {
+            res.status(401).json({ autenticado: false, message: 'Credenciais inválidas' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};;
 exports.buscarVendedor =  async (req, res) => {
     try{
      const vendedor = await Vendedor.find() 

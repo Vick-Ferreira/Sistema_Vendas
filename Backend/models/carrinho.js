@@ -5,7 +5,8 @@ const Carrinho = mongoose.model('Carrinho', {
         _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Produto' },
         nome: String,
         preco: String,
-        categoria: String
+        categoria: String,
+        quantidade: String // propriedade quantidade
     }]
 });
 

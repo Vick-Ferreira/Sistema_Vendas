@@ -10,6 +10,9 @@ router.post('/', adiminController.createAdimin);
 // (Listagem)
 router.get('/', adiminController.buscarAdimin);
 
+//(AUTENTICA O USE QUE ESTA FAZENDO LOGIN)
+router.get('/', adiminController.autenticar);
+
 //Listagem + id
 router.get('/:id',  adiminController.buscarIdAdimin);
 

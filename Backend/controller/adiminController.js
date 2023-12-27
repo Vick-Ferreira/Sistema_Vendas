@@ -50,6 +50,23 @@ exports.buscarIdAdimin =  async ( req, res ) => {
     }
 
 }
+//LOGIN
+exports.autenticar = async (req, res) => {
+    const { nome, senha } = req.query;
+
+    try {
+        const admin = await Adimin.findOne({ nome, senha });
+
+        if (admin) {
+            res.status(200).json({ autenticado: true, message: 'Autenticação bem-sucedida' });
+        } else {
+            res.status(401).json({ autenticado: false, message: 'Credenciais inválidas' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 //Função para atualizar o adimin
 exports.updateAdimin =  async (req, res) => {
