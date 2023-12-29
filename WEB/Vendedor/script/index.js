@@ -109,24 +109,39 @@ function obterDetalhesProduto(produtoId) {
         console.error('Erro ao obter detalhes do produto:', error);
     });
 }
-//ADICIONANDO PRODUTO NA COLLECTION CARRINHO
-function adicionarAoCarrinho(produtoId) {
-    fetch('http://localhost:3000/carrinho', {
+
+function adicionarAoCarrinho(id, nome, preco, categoria) {
+    const quantidade = 1;
+
+    fetch(`http://localhost:3000/produto/${produtoId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ produtoId }),
+        body: JSON.stringify({
+            produtoId: id,
+            nome: nome,
+            preco: preco,
+            categoria: categoria,
+        }),
     })
-    .then(res => res.json())
-    .then(data => {
-        console.log('Produto adicionado ao carrinho:', data);
-        listarAoCarrinho();
+    .then(resposta => {
+        if (resposta.ok) {
+            console.log('Produto adicionado ao carrinho com sucesso.');
+        } else {
+            console.error('Erro ao adicionar produto ao carrinho.');
+        }
     })
-    .catch(error => {
-        console.error('Erro ao adicionar produto ao carrinho:', error);
+    .catch(erro => {
+        console.error('Erro ao adicionar produto ao carrinho:', erro);
     });
 }
+
+  
+ 
+  
+  
+
 //LISTANDO PRODUTOS QUE ESTÃO NO CARRINHO
 function listarAoCarrinho() {
     const carrinhoLista = document.getElementById('carrinho-lista');
@@ -206,15 +221,21 @@ function cardCarrinho(produto) {
     btnAumentarQuantidade.onclick = function (e) {
         e.preventDefault();
         const produtoId = produto._id;
-        atualizarQuantidadeCarrinho(produtoId, 1, quantidadeProduto);
-    };
+       // Obter a quantidade atual do span
+       const quantidadeAtual = parseInt(quantidadeProduto.innerHTML, 10); 
+       const novaQuantidade = quantidadeAtual + 1;   
+        atualizarQuantidadeNoServidor(produtoId, novaQuantidade);
+     };
 
     const btnDiminuirQuantidade = document.createElement('button');
     btnDiminuirQuantidade.innerHTML = '-';
     btnDiminuirQuantidade.onclick = function (e) {
         e.preventDefault();
         const produtoId = produto._id;
-        atualizarQuantidadeCarrinho(produtoId, -1, quantidadeProduto);
+        // Obter a quantidade atual do span
+        const quantidadeAtual = parseInt(quantidadeProduto.innerHTML, 10); 
+        const novaQuantidade = Math.max(quantidadeAtual - 1, 1);
+        atualizarQuantidadeNoServidor(produtoId, novaQuantidade);
     };
 
     const btnExcluir = document.createElement('a');
@@ -240,41 +261,36 @@ function cardCarrinho(produto) {
     return cards;
 }
 
-
-function atualizarQuantidadeCarrinho(produtoId) {
-    console.log('Produto ID:', produtoId);
-        fetch(`http://localhost:3000/carrinho/${produtoId}`)
-        .then(res => res.json())
-        .then(data => {
-            const inputId = document.getElementById('id');
-            
-        })
-
-        const btnSalvar = document.getElementById('finalizar_compra');
-        btnSalvar.onclick = function(e){
-            e.preventDefault();
-
-            const atualizarDados = {
-                "nome": inputNome.value,
-                "senha": inputSenha.value
-            }
-        }
-        const header ={
+function atualizarQuantidadeNoServidor(produtoId, novaQuantidade) {
+    fetch(`http://localhost:3000/carrinho/produtos/${produtoId}`, {
         method: 'PATCH',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
         },
-        body: JSON.stringify(atualizarDados)
-    };
-
-    fetch(`http://localhost:3000/carrinho/${produtoId}`, header)
-    .then(() => {
-        carregarGetCarrinho
+        body: JSON.stringify({ novaQuantidade }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log('Quantidade do produto atualizada no servidor:', data);
     })
     .catch(error => {
-        console.error('error ao atualizar')
-    })
+        console.error('Erro ao atualizar a quantidade do produto no servidor:', error);
+    });
 }
+
+
+
+
+
+// Chame a função para obter os dados do carrinho e atualizar a quantidade do primeiro produto
+obterDadosCarrinho();
+
+
+
+
+
+
+
 
 
 linkVendedor.addEventListener('click', function(e){

@@ -3,28 +3,29 @@ const Produto = require('../models/produto')
 
 // Criando produto com Multer
 exports.createCarrinho = async (req, res) => {
-    const { produtoId } = req.body;
+    const { produtoId, nome, preco, categoria } = req.body;
 
     try {
-        const produto = await Produto.findById(produtoId);
+        const carrinho = await Carrinho.findOne({ 'produtos.produtoId': produtoId });
 
-        if (!produto) {
-            res.status(404).json({ error: 'Produto não encontrado' });
-            return;
+        if (carrinho) {
+            // Se o produto já estiver no carrinho, atualize a quantidade
+            await Carrinho.updateOne(
+                { 'produtos.produtoId': produtoId },
+                { $inc: { 'produtos.$.quantidade': 1 } }
+            );
+        } else {
+            // Se o produto não estiver no carrinho, insira um novo documento
+            await Carrinho.create({ produtos: [{ produtoId, nome, preco, categoria, quantidade: 1 }] });
         }
 
-        const carrinho = await Carrinho.findOneAndUpdate(
-            {}, // Você pode usar algum identificador do usuário aqui se necessário
-            { $push: { produtos: { _id: produto._id, nome: produto.nome, preco: produto.preco, categoria: produto.categoria } } },
-            { new: true, upsert: true }
-        );
-
-        res.status(200).json({ message: 'Produto adicionado ao carrinho com sucesso', carrinho });
+        res.status(200).send('Produto adicionado ao carrinho com sucesso.');
     } catch (error) {
-        console.error('Erro ao adicionar produto ao carrinho:', error);
-        res.status(500).json({ error: error });
+        console.error(error);
+        res.status(500).send('Erro ao adicionar produto ao carrinho.');
     }
 };
+
 exports.buscarProdutoCarrinho = async (req, res) => {
     try{
         const produto = await Carrinho.find() //await (aguarda banco) (find - comando mongo)
@@ -33,27 +34,38 @@ exports.buscarProdutoCarrinho = async (req, res) => {
      res.status(500).json({json: error})
     }
 }
-exports.updateCarrinho = async (req, res) => {
+exports.updateQuantidadeProduto = async (req, res) => {
     const carrinhoId = req.params.id;
-    const { produtoId, novaQuantidade } = req.body;
-
-    //'produtos._id' é usado para procurar no array de produtos dentro do documento do carrinho pelo ID específico do produto (produtoId). Assim, a atualização ocorre no produto correto dentro do carrinho.
+    const produtoId = req.params.produtoId;
+    const novaQuantidade = req.body.novaQuantidade;
 
     try {
-        const updateCarrinho = await Carrinho.findOneAndUpdate(
-            { _id: carrinhoId, 'produtos._id': produtoId },
-            { $set: { 'produtos.$.quantidade': novaQuantidade } },
-            { new: true }
-        );
+        console.log('Tentando encontrar o carrinho com o ID:', carrinhoId);
+        const carrinho = await Carrinho.findById(carrinhoId);
 
-        if (!updateCarrinho) {
-            return res.status(404).json({ message: 'Carrinho não encontrado ou produto não pertence ao carrinho.' });
+        if (!carrinho) {
+            console.error('Carrinho não encontrado. ID do Carrinho:', carrinhoId);
+            return res.status(404).json({ message: 'Carrinho não encontrado.' });
         }
 
-        res.json({ message: 'Carrinho atualizado com sucesso.' });
+        console.log('Carrinho encontrado. ID do Carrinho:', carrinhoId);
+
+        // Encontrar o produto pelo _id
+        console.log('Tentando encontrar o produto no carrinho com o ID:', produtoId);
+        const produtoParaAtualizar = carrinho.produtos.find(produto => produto._id.toString() === produtoId);
+
+        if (!produtoParaAtualizar) {
+            console.error('Produto não encontrado no carrinho. ID do Produto:', produtoId);
+            return res.status(404).json({ message: 'Produto não encontrado no carrinho.' });
+        }
+
+        console.log('Produto encontrado no carrinho. ID do Produto:', produtoId);
+
+        // Restante do código...
+
     } catch (error) {
-        console.error('Erro ao atualizar o carrinho:', error);
-        res.status(500).json({ message: 'Erro interno ao atualizar o carrinho.' });
+        console.error('Erro ao atualizar a quantidade do produto:', error);
+        res.status(500).json({ message: 'Erro interno ao atualizar a quantidade do produto.' });
     }
 };
 
