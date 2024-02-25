@@ -134,7 +134,7 @@ linkProdutos.addEventListener('click', function (e) {
 function carregarProdutos() {
     carregarHTML('../WEB/Produtos.html');
     getProdutos();
-    criarListaCategoria
+    
    
 }
 //CRUD
@@ -197,6 +197,30 @@ function criarListaCategoria() {
 
     DivLista.appendChild(ListaCategoria);
     return DivLista;
+}
+//Minha função para listar produtos e suas categorias
+function getProdutosPorCategoria(categoria) {
+    const listagemDinamica = document.getElementById('listagemDinamica');
+    listagemDinamica.innerHTML = '';
+
+    fetch(`http://localhost:3000/produto/categoria/${categoria}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log(`Produtos da categoria ${categoria} listados:`, data);
+
+        data.forEach(produto => {
+            const card = criarCardProduto(produto);
+            listagemDinamica.appendChild(card);
+        });
+    })
+    .catch(error => {
+        console.error(`Erro ao listar produtos da categoria ${categoria}:`, error);
+    });
 }
 
  //criando card adminin
@@ -764,28 +788,4 @@ function carregarCha() {
 
 
 
-//Minha função para listar produtos e suas categorias
-function getProdutosPorCategoria(categoria) {
-    const listagemDinamica = document.getElementById('listagemDinamica');
-    listagemDinamica.innerHTML = '';
-
-    fetch(`http://localhost:3000/produto/categoria/${categoria}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log(`Produtos da categoria ${categoria} listados:`, data);
-
-        data.forEach(produto => {
-            const card = criarCardProduto(produto);
-            listagemDinamica.appendChild(card);
-        });
-    })
-    .catch(error => {
-        console.error(`Erro ao listar produtos da categoria ${categoria}:`, error);
-    });
-}
 

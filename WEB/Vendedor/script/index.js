@@ -7,24 +7,25 @@ function carregarHTML(url) {
             main.innerHTML = html;
         });
 }
-
+//chamando o html de getprodutos
 linkVendedores.addEventListener('click', function (e) {
     e.preventDefault();
-    carregarGetProdutos();
+    carregarProduto();
 });
-
-function carregarGetProdutos() {
-    carregarHTML('./web/getProdutos.html');
+function carregarProduto(){
+    carregarHTML('../WEB/Produtos.html');
     getProdutosVendedor();
 }
 
+
 function getProdutosVendedor() {
-    const chamadaDinamica = document.getElementById('chamada_dinamica');
-    if (!chamadaDinamica) {
-        console.error('Elemento chamada_dinamica não encontrado.');
-        return;
-    }
-    chamadaDinamica.innerHTML = '';
+    const chamadaDinamica = document.getElementById('categoria');  //pegando chamada dinamica do indexVendedor
+    chamadaDinamica.innerHTML = ''; //limpando
+
+    //adicionando no container a lista criada das categorias
+    const listaCategoria = criarListaCategoria(); //conteudo categoria é o container no html
+    chamadaDinamica.appendChild(listaCategoria);  //recebe criarLista
+
 
     fetch('http://localhost:3000/produto', {
         method: 'GET',
@@ -36,14 +37,72 @@ function getProdutosVendedor() {
         .then(data => {
             console.log('produtos', data);
             data.forEach(produto => {
-                const cards = cardProduto(produto);
-                chamadaDinamica.appendChild(cards);
+                const card = cardProduto(produto);
+                chamadaDinamica.appendChild(card);
             });
         })
         .catch(error => {
             console.error('Erro ao listar produtos:', error);
         });
 }
+//criar uma lista para clicar em um link que chama produtos e lista dinamicamente na mesma pagina
+//CRIANDO LISTA DE CATEORIAS
+function criarListaCategoria() {
+    const DivLista = document.createElement('div');
+    DivLista.classList.add('DivLista');
+
+    const ListaCategoria = document.createElement('ul');
+    ListaCategoria.classList.add('ul');
+
+    // Adicione os links de categoria dinamicamente
+    const categorias = ['Refrigerante', 'Suco', 'Energetico', 'Cha']; // ou você pode buscar dinamicamente do seu backend
+    categorias.forEach(categoria => { //loop
+        const lista = document.createElement('li');
+        lista.classList.add('li');
+        const link = document.createElement('a');
+        link.classList.add('link');
+        link.textContent = categoria;
+        link.id = `link${categoria}`;
+        lista.appendChild(link);
+        ListaCategoria.appendChild(lista);
+        //  evento de clique para carregar os produtos da categoria quando o link for clicado
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            getProdutosPorCategoria(categoria);
+        });
+    });
+
+    DivLista.appendChild(ListaCategoria);
+    return DivLista;
+}
+
+//Minha função para listar produtos e suas categorias
+function getProdutosPorCategoria(categoria) {
+    const listagemDinamica = document.getElementById('listagemDinamica');
+    listagemDinamica.innerHTML = '';
+
+    fetch(`http://localhost:3000/produto/categoria/${categoria}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log(`Produtos da categoria ${categoria} listados:`, data);
+
+        data.forEach(produto => {
+            const card = cardProduto(produto);
+            listagemDinamica.appendChild(card);
+        });
+    })
+    .catch(error => {
+        console.error(`Erro ao listar produtos da categoria ${categoria}:`, error);
+    });
+}
+
+
+
 
 
 
