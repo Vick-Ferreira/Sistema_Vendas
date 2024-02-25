@@ -1,4 +1,4 @@
-const main = document.getElementById('chamada');
+const main = document.getElementById('chamada_dinamica');
 
 function carregarHTML(url) {
     fetch(url)
@@ -60,10 +60,10 @@ function carregarGetCarrinho() {
     listarAoCarrinho();
 
 }
-
+//card produto vendedor
 function cardProduto(produto) {
     const cards = document.createElement('div');
-    cards.classList.add('cards');
+    cards.classList.add('card');
 
     const nomeProduto = document.createElement('p');
     nomeProduto.classList.add('nomeProduto');
@@ -137,10 +137,7 @@ function adicionarAoCarrinho(id, nome, preco, categoria) {
     });
 }
 
-  
- 
-  
-  
+
 
 //LISTANDO PRODUTOS QUE ESTÃO NO CARRINHO
 function listarAoCarrinho() {

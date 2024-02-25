@@ -18,7 +18,6 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav" id="listaCategorias">
-            <li  class="nav-item"><a class="nav-link" href="#" id="telaLogin">Tela Login</a></li>
 
             <li  class="nav-item"><a class="nav-link" href="#" id="cadastroAdimin">Cadastro adimin</a></li>
             <li  class="nav-item"><a class="nav-link" href="#" id="adiministradores">Adiministradores</a></li>
@@ -33,22 +32,12 @@
     </nav>
     
     <div class="container-fluid p-0">
-        <div class="col">
+        <div class="col-6 mx-auto">
             <div class="row">
-                <img src="../../img/capa.png">
+                <img src="../../img/capa.png" class="">
             </div>
         </div>
     </div>
-
-    <div class="container">
-        <ul class="p-0 listaCategorias" id="listaCategorias">
-            <li  class="nav-item"><a class="nav-link" href="#" id="linkRefrigerante">Refrigerante</a></li>
-            <li  class="nav-item"><a class="nav-link" href="#" id="linkSuco">Suco</a></li>
-            <li  class="nav-item"><a class="nav-link" href="#" id="linkEnergetico">Energético</a></li>
-            <li  class="nav-item"><a class="nav-link" href="#" id="linkCha">CháS</a></li>
-        </ul>
-    </div>
-
     <div class="container">
         <div class="row">
             <div class="col" id="conteudo" >
@@ -57,13 +46,22 @@
     </div>
     <div class="container">
         <div class="row">
-            <div class="col" id="listagemDinamica">
-                
-                <!--aqui os produtos são listados apos a criação dos mesmos e dos seus cards pelo
-                IMPORTANTE: OS CARDS APARECEM AQUI POIS ESTOU CRIANDO ELES DINAMICAMENTE NO JS-->
+            <div class="col" id="categoria">
+                <!--listar minha lista de links dinamicamente-->
             </div>
         </div>
     </div>
+    <div class="container">
+        <div class="row">
+                <div class="col" id="listagemDinamica">
+                    <!--aqui os produtos são listados apos a criação dos mesmos e dos seus cards pelo
+                    IMPORTANTE: OS CARDS APARECEM AQUI POIS ESTOU CRIANDO ELES DINAMICAMENTE NO JS-->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
 
     <script src="../script/Index.js"></script>
 </body>

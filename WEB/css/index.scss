@@ -8,12 +8,15 @@
     cursor: pointer;
 }
 .listaCategorias{
-
     background-color: aquamarine;
     display: flex;
     justify-content: center;
 }
 #listagemDinamica{
+    display: flex;
+    flex-wrap: wrap;
+}
+#chamada_dinamica{
     display: flex;
     flex-wrap: wrap;
 }
@@ -26,4 +29,12 @@
     text-decoration: none; 
     display: flex;
     justify-content: center;
+   }
+   .ul{
+    display: flex;
+    gap: 25px;
+   }
+   .li{
+    list-style: none;
+   
    }

@@ -19,6 +19,11 @@
   flex-wrap: wrap;
 }
 
+#chamada_dinamica {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 .card {
   padding: 15px;
   margin: 10px;
@@ -29,4 +34,13 @@
   text-decoration: none;
   display: flex;
   justify-content: center;
+}
+
+.ul {
+  display: flex;
+  gap: 25px;
+}
+
+.li {
+  list-style: none;
 }/*# sourceMappingURL=index.css.map */

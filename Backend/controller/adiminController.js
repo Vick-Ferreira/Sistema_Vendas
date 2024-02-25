@@ -8,7 +8,6 @@ exports.createAdimin = async (req, res) => {
     if (!nome) {
         return res.status(422).json({ error: 'O nome do administrador é obrigatório' });
     }
-
     const adimin = {
         nome,
         senha,

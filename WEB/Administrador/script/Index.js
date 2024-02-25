@@ -15,7 +15,48 @@ function carregarHTML(url, callback) {
             console.error('Erro ao carregar HTML:', error);
         });
 }
+carregarLogin();
 
+function carregarLogin() {
+    carregarHTML('./telaLogin.html', function() {
+        main.addEventListener('submit', function(e) {
+            // Verifica se é o formulário que estamos procurando
+            if (e.target && e.target.id === 'formulario_Loginadimin') {
+                e.preventDefault();
+
+                const nome = document.getElementById('nome').value;
+                const senha = document.getElementById('senha').value;
+
+                // Certifica-se de que os campos não estejam vazios
+                if (!nome || !senha) {
+                    alert('Por favor, insira nome e senha.');
+                    return;
+                }
+                // Faz a solicitação ao servidor para obter todos os administradores
+                fetch('http://localhost:3000/adimin', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(res => res.json())
+                .then(data => {//aqui volta a lista toda dos administradores
+                    // usando o find vemos se a lista que veio do servidor tem o nome e a senha que o usuario colocou
+                    const adminAutenticado = data.find(admin => admin.nome === nome && admin.senha === senha);
+                    if (adminAutenticado) {
+                        alert('Autenticação bem-sucedida!');
+                        carregarProdutos();
+                    } else {
+                        alert('Nome ou senha incorretos. Tente novamente.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao autenticar:', error);
+                });
+            }
+        });
+    });
+}
 
 
 
@@ -37,7 +78,7 @@ script é carregado, você adiciona o ouvinte de eventos ao
     carregarCadastrarProdutos();
 });
 
-getProdutos();
+
  function carregarCadastrarProdutos() {
     carregarHTML('../WEB/cadastroProduto.html', function () {
         main.addEventListener('submit', function (e) {
@@ -64,6 +105,7 @@ getProdutos();
                 })
                 .then(res => res.json())
                 .then(data => {
+                    alert('Produto Adicionado!')
                     console.log('Produto adicionado:', data);
 
                     //LIMPANDO INPUTS
@@ -92,41 +134,76 @@ linkProdutos.addEventListener('click', function (e) {
 function carregarProdutos() {
     carregarHTML('../WEB/Produtos.html');
     getProdutos();
+    criarListaCategoria
+   
 }
 //CRUD
 //chamando aqui para listar as ja existentes no banco assim que abre a pagina
 // Função para listar os produtos
 function getProdutos() {
- // Limpar a seção antes de adicionar os novos produtos
-    const listagemDinamica = document.getElementById('listagemDinamica'); //recuperando elemento html
-     listagemDinamica.innerHTML = '';
+    //html
+    const conteudoCategoria = document.getElementById('categoria');
+    conteudoCategoria.innerHTML = ''; //limpando
+
+    //adicionando no container a lista criada das categorias
+    const listaCategoria = criarListaCategoria(); //conteudo categoria é o container no html
+    conteudoCategoria.appendChild(listaCategoria);  //recebe criarLista
 
  // Listar produtos
  fetch('http://localhost:3000/produto', {
      method: 'GET',
      headers: {
          'Content-Type': 'application/json',
-     },
+     }
  })
  .then(res => res.json())
  .then(data => {
      console.log('Produtos listados:', data);
      // Para cada produto, criar um card e adicioná-lo à seção
      data.forEach(produto => {
-         const card = criarCardProjetos(produto);
-         listagemDinamica.appendChild(card); // Adicione o a cada produto
+         const card = criarCardProduto(produto);
+         listagemDinamica.appendChild(card); // Adicione o card a cada produto e lista
      });
  })
  .catch(error => {
      console.error('Erro ao listar produtos:', error);
  });
 }
- //criando card
-function criarCardProjetos(produto) {
+//CRIANDO LISTA DE CATEORIAS
+function criarListaCategoria() {
+    const DivLista = document.createElement('div');
+    DivLista.classList.add('DivLista');
+
+    const ListaCategoria = document.createElement('ul');
+    ListaCategoria.classList.add('ul');
+
+    // Adicione os links de categoria dinamicamente
+    const categorias = ['Refrigerante', 'Suco', 'Energetico', 'Cha']; // ou você pode buscar dinamicamente do seu backend
+    categorias.forEach(categoria => { //loop
+        const lista = document.createElement('li');
+        lista.classList.add('li');
+        const link = document.createElement('a');
+        link.classList.add('link');
+        link.textContent = categoria;
+        link.id = `link${categoria}`;
+        lista.appendChild(link);
+        ListaCategoria.appendChild(lista);
+        //  evento de clique para carregar os produtos da categoria quando o link for clicado
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            getProdutosPorCategoria(categoria);
+        });
+    });
+
+    DivLista.appendChild(ListaCategoria);
+    return DivLista;
+}
+
+ //criando card adminin
+function criarCardProduto(produto) {
     const card = document.createElement('div');
     card.classList.add('card');
 
-    
     const NomeProduto = document.createElement('p');
     NomeProduto.classList.add('nomeProduto');
     NomeProduto.innerHTML = produto.nome;
@@ -242,8 +319,6 @@ function excluirProduto(id) {
 }
 
 //IMPORTANTE LEMBRAS: QUANDO CARREGAMOS PAGINAS DINAMICAS E TRABALHAMOS COM EVENTOS DE CLICK, JS PRECISA AGURDA HTML ESTAR REALMENT NO DOM
-
-
 cadastroAdimin.addEventListener('click', function(e) {
     e.preventDefault();
     carregarcadastroAdimin();
@@ -268,12 +343,20 @@ function carregarcadastroAdimin(){
                 fetch('http://localhost:3000/adimin', {
                     method: 'POST',
                     headers: {
-                         'Content-Type': 'application/json',
+                        'Content-Type': 'application/json',
                         }, body: JSON.stringify(adimin),
                     })
                     .then(res => res.json())
                     .then(data => {
+                        alert('Adiministrador Adicionado!')
                         console.log('adicionado: ', data);
+                          //LIMPANDO INPUTS
+                    const meuFormulario = document.getElementById('formulario_adimin');
+                    if(meuFormulario){
+                        meuFormulario.reset();
+                    }else{
+                        console.error('Formulário não encontrado!');
+                    }
                     })
                 .catch(error => console.error('Erro ao autenticar: ', error));
             }
@@ -414,52 +497,7 @@ function excluirAdimin(adiminId){
     console.error('erro', error)
 })
 }
-telaLogin.addEventListener('click', function(e) {
-    e.preventDefault();
-    carregarLogin();
-});
 
-function carregarLogin() {
-    carregarHTML('./telaLogin.html', function() {
-        main.addEventListener('submit', function(e) {
-            // Verifica se é o formulário que estamos procurando
-            if (e.target && e.target.id === 'formulario_Loginadimin') {
-                e.preventDefault();
-
-                const nome = document.getElementById('nome').value;
-                const senha = document.getElementById('senha').value;
-
-                // Certifica-se de que os campos não estejam vazios
-                if (!nome || !senha) {
-                    alert('Por favor, insira nome e senha.');
-                    return;
-                }
-
-                // Faz a solicitação ao servidor para obter todos os administradores
-                fetch('http://localhost:3000/adimin', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
-                .then(res => res.json())
-                .then(data => {//aqui volta a lista toda dos administradores
-                    // usando o find vemos se a lista que veio do servidor tem o nome e a senha que o usuario colocou
-                    const adminAutenticado = data.find(admin => admin.nome === nome && admin.senha === senha);
-                    if (adminAutenticado) {
-                        
-                        alert('Autenticação bem-sucedida!');
-                    } else {
-                        alert('Nome ou senha incorretos. Tente novamente.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao autenticar:', error);
-                });
-            }
-        });
-    });
-}
 
 
 
@@ -469,7 +507,6 @@ linkCadastrarVendedores.addEventListener('click', function (e) {
     e.preventDefault();
     carregarCadastrarVendedores();
 });
-
 function carregarCadastrarVendedores() {
     carregarHTML('./cadastroVendedor.html', function () {
      //carrega o html de cadastroVendedores 
@@ -503,6 +540,7 @@ function carregarCadastrarVendedores() {
                 })
                 .then(res => res.json())
                 .then(data => {
+                    alert('Vendedor adicionado com sucesso!')
                     console.log('Vendedor adicionado:', data);
 
                     //LIMPANDO INPUTS
@@ -616,20 +654,17 @@ function  carregarVendedores() {
     getVendedores();
 }
 function getVendedores() {
-
     const listagemDinamica = document.getElementById('listagemDinamica'); //recuperando elemento html
-     listagemDinamica.innerHTML = '';
-
-
- fetch('http://localhost:3000/vendedor', {
-     method: 'GET',
-     headers: {
-         'Content-Type': 'application/json',
-     },
- })
- .then(res => res.json())
- .then(data => {
-     console.log('Vendedores listados:', data);
+    listagemDinamica.innerHTML = '';
+    fetch('http://localhost:3000/vendedor', {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+})
+    .then(res => res.json())
+    .then(data => {
+    console.log('Vendedores listados:', data);
      // criar um card e adicioná-lo à seção
      data.forEach(vendedor => {
          const card = criarCardVendedor(vendedor);
@@ -707,39 +742,21 @@ function getVendedores() {
 
 
 //redirecionando por categoria e renderizando por ordem os html
-
-//refri
-linkRefrigerante.addEventListener('click', function (e) {
-    e.preventDefault(); // Evita que o link recarregue a página
-    carregarRefrigerante();
-});
 function carregarRefrigerante() {
     carregarHTML('../categorias/refrigerante.html');
     getProdutosPorCategoria('Refrigerante'); // Passa a categoria desejada como argumento
 }
 //suco
-linkSuco.addEventListener('click', function (e) {
-    e.preventDefault();
-    carregarSuco();
-});
 function carregarSuco() {
     carregarHTML('../categorias/suco.html');
     getProdutosPorCategoria('Suco');
 }
 //energetico
-linkEnergetico.addEventListener('click', function (e) {
-    e.preventDefault();
-    carregarEnergetico();
-});
 function carregarEnergetico() {
     carregarHTML('../categorias/energetico.html');
     getProdutosPorCategoria('Energetico');
 }
 //chas
-linkCha.addEventListener('click', function (e) {
-    e.preventDefault();
-    carregarCha();
-});
 function carregarCha() {
     carregarHTML('../categorias/cha.html');
     getProdutosPorCategoria('Cha');
@@ -763,7 +780,7 @@ function getProdutosPorCategoria(categoria) {
         console.log(`Produtos da categoria ${categoria} listados:`, data);
 
         data.forEach(produto => {
-            const card = criarCardProjetos(produto);
+            const card = criarCardProduto(produto);
             listagemDinamica.appendChild(card);
         });
     })
