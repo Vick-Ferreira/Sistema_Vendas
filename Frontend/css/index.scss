@@ -1,0 +1,40 @@
+
+.navbar-nav{
+    margin-left: auto;
+}
+.nav-item{
+    margin: 15px;
+    list-style: none;
+    cursor: pointer;
+}
+.listaCategorias{
+    background-color: aquamarine;
+    display: flex;
+    justify-content: center;
+}
+#listagemDinamica{
+    display: flex;
+    flex-wrap: wrap;
+}
+#chamada_dinamica{
+    display: flex;
+    flex-wrap: wrap;
+}
+.card{
+   padding: 15px;
+   margin: 10px;
+   max-width: 350px;
+}
+.card a{
+    text-decoration: none; 
+    display: flex;
+    justify-content: center;
+   }
+   .ul{
+    display: flex;
+    gap: 25px;
+   }
+   .li{
+    list-style: none;
+   
+   }
