@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "scipt" : "node index.js"
+    "script" : "node index.js"
   },
   "keywords": [],
   "author": "",
