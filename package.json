@@ -1,0 +1,16 @@
+{
+  "name": "sistema_vendas",
+  "version": "1.0.0",
+  "description": "Trabalho em desenvolvimento:",
+  "main": "index.js",
+  "scripts": {
+    "start": "cd Backend && npm start & cd ../WEB && npm start"
+  }
+  ,
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "http-server": "^14.1.1"
+  }
+}
