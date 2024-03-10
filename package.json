@@ -4,13 +4,15 @@
   "description": "Trabalho em desenvolvimento:",
   "main": "index.js",
   "scripts": {
-    "start": "cd Backend && npm start & cd ../WEB && npm start"
-  }
-  ,
+    "start": "concurrently \"npm run backend\" \"npm run web\"",
+    "backend": "cd Backend && npm start",
+    "frontend": "cd WEB && npm start"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "concurrently": "^8.2.2",
     "http-server": "^14.1.1"
   }
 }
