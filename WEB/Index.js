@@ -18,7 +18,7 @@ function carregarHTML(url, callback) {
 carregarLogin();
 
 function carregarLogin() {
-    carregarHTML('./telaLogin.html', function() {
+    carregarHTML('./Administrador/web/telaLogin.html', function() {
         main.addEventListener('submit', function(e) {
             // Verifica se é o formulário que estamos procurando
             if (e.target && e.target.id === 'formulario_Loginadimin') {
