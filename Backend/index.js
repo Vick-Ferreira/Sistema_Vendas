@@ -4,6 +4,8 @@ const express = require('express') //importando arquivos do node_modules
 const mongoose = require('mongoose')
 const path = require('path');
 const app = express();
+require('dotenv').config();
+
 const port = process.env.PORT || 3000;//Heroku
 
 // Configuração do middleware express.static para servir arquivos estáticos
@@ -40,24 +42,23 @@ app.get('/', (req, res) => {
     res.json({message: 'Oi express'})//a resposta para a minha  rota / vai ser json e vou enviar algo, json = objeto javascript , paramentro message
 })//em react é necessario eu tratar  as respostas, verificar se veio parametro message e exibir a mensagem na tela  = CONECTAR AMBOS
 
-// Iniciando o servidor
-app.listen(port, () => {
-    console.log(`Servidor rodando na porta ${port}`);
-});
 
-
-//conexão com o mongo
-//mongodb+srv://vitoriaferreirap06:123456@cluster0.6puyj2y.mongodb.net/bancodaapi?retryWrites=true&w=majority
-//ENTREGA UMA PORTA
-//não quero iniciar a aplicação antes de se conectar com o banco de dados - conectando ao banco
-const db_user = 'vitoria';
-const db_password = encodeURIComponent('Romeu20');
-
-mongoose
-  .connect(`mongodb+srv://${db_user}:${db_password}@api.fajqg6b.mongodb.net/bancodaapi?retryWrites=true&w=majority`)
-  .then(() => {
-    console.log("Conectou ao MongoDB");
-
+// Conexão com o banco de dados MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
   })
-  .catch((err) => console.error(err));
-
+    .then(() => {
+      console.log('Conectado ao MongoDB');
+    })
+    .catch((error) => {
+      console.error('Erro ao conectar ao MongoDB:', error);
+    });
+  const connection = mongoose.connection;
+  connection.once('open', () => {
+    console.log("Conexão com MongoDB estabelecida com sucesso!");
+  });
+  // Inicialização do servidor
+  app.listen(port, () => {
+    console.log(`Servidor está rodando na porta: ${port}`);
+  });
